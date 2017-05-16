@@ -10,8 +10,8 @@ public:
   Monitor();
   ~Monitor();
 
-  void reset();                     // ƒŠƒZƒbƒg
-  void display(const char* str);       // •¶š•\¦
-  void next();                      // Ÿ‚Ìs‚ÉˆÚ‚é
+  void reset();                     // ãƒªã‚»ãƒƒãƒˆ
+  void display(const char* str);       // æ–‡å­—è¡¨ç¤º
+  void next();                      // æ¬¡ã®è¡Œã«ç§»ã‚‹
 
 };

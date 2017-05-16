@@ -16,6 +16,7 @@
 #include "Clock.h"
 #include "Motor.h"
 #include "Monitor.h"
+#include <stdlib.h>
 
 using namespace ev3api;
 
@@ -42,6 +43,7 @@ static FILE     *bt = NULL;      /* Bluetoothファイルハンドル */
 /* 関数プロトタイプ宣言 */
 static void tailControl(int32_t angle);
 static void waitTouch(void);
+static void waitNext(int32_t roopNumber);
 static char* getColorName(colorid_t color);
 
 /* オブジェクトへのポインタ定義 */
@@ -64,8 +66,9 @@ void main_task(intptr_t unused)
     uint8_t     ambient;
     int8_t      brightness;
     colorid_t   color_number;
-    rgb_raw_t   raw_color;
-    char        buf[EV3_LCD_WIDTH];
+    rgb_raw_t   raw_color_data;
+    rgb_raw_t   *raw_color = &raw_color_data;
+    char        buf[1000];
     ledcolor_t led_color[3] = {LED_GREEN,LED_ORANGE,LED_RED};
 
     /* LCD画面表示 */
@@ -81,15 +84,11 @@ void main_task(intptr_t unused)
     /* Bluetooth通信タスクの起動 */
     act_tsk(BT_TASK);
 
-    /* 完全停止用角度に制御 */
-    tailControl(TAIL_ANGLE_STAND_UP);
-
     // 測定は３回行える
     for(int i=0; i<3; i++)
     {
         /* 初期化完了通知 */
         ev3_led_set_color(led_color[i]);
-        monitor->display("ready now...");
 
         /* n回目のタッチセンサー待機 */
         waitTouch();
@@ -112,17 +111,28 @@ void main_task(intptr_t unused)
         monitor->display(buf);
 
         /** RGB Raw値を測定する **/
-        colorSensor->getRawColor(raw_color);
-        sprintf(buf,"RGB is %-d , %-d , %-d",raw_color.r,raw_color.g,raw_color.b);
+        colorSensor->getRawColor(*raw_color);
+        sprintf(buf,"RGB is %-d , %-d , %-d",raw_color->r,raw_color->g,raw_color->b);
+        monitor->display(buf);
 
+        waitNext(300);
     }
 
     /* 完了通知 */
     ev3_led_set_color(LED_OFF);
-    monitor->display("end monitoring");
+    monitor->display("end monitoring-test");
+
+    /* 尻尾モーターのリセット */
+    tailMotor->reset();
 
     ter_tsk(BT_TASK);
     fclose(bt);
+
+    delete touchSensor;
+    delete colorSensor;
+    delete tailMotor;
+    delete monitor;
+    delete clock;
 
     ext_tsk();
 }
@@ -160,6 +170,9 @@ static void waitTouch(void)
     while(1)
     {
 
+        /* 完全停止用角度に制御 */
+        tailControl(TAIL_ANGLE_STAND_UP);
+
         if (bt_cmd == 1)
         {
             break; /* リモートスタート */
@@ -172,6 +185,28 @@ static void waitTouch(void)
 
         /* 10msec周期起動 */
         clock->sleep(10);
+    }
+}
+
+//*****************************************************************************
+// 関数名 : waitNext
+// 引数 : なし
+// 返り値 : なし
+// 概要 : ループを抜けるまで繰り返す
+//*****************************************************************************
+static void waitNext(int32_t roopNumber)
+{
+    int32_t i = 1;
+    while(i != roopNumber)
+    {
+
+        /* 完全停止用角度に制御 */
+        tailControl(TAIL_ANGLE_STAND_UP);
+
+        /* 10msec周期起動 */
+        clock->sleep(10);
+
+        i++;
     }
 }
 
