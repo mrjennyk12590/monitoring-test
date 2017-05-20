@@ -1,15 +1,19 @@
 #include "Monitor.h"
-#include "ev3api.h"
 
+// コンストラクタ
 Monitor::Monitor()
 {
+    sdCard = new SdCard();
     reset();
 }
 
+// デストラクタ
 Monitor::~Monitor()
 {
+    delete sdCard;
 }
 
+//初期化処理
 void Monitor::reset()
 {
     x_ = 0;
@@ -18,12 +22,20 @@ void Monitor::reset()
     ev3_lcd_set_font(EV3_FONT_SMALL);
 }
 
+//表示処理
 void Monitor::display(const char* str)
 {
-    next();
+    // モニターの表示エリアを超える場合は、モニターを初期化する
+    if(y_ >= EV3_LCD_HEIGHT)
+    {
+        reset();
+    }
     ev3_lcd_draw_string(str, x_, y_);
+    sdCard->write(str);
+    next();
 }
 
+// 次の行に移る
 void Monitor::next()
 {
     x_ = 0;

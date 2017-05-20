@@ -17,6 +17,7 @@
 #include "Motor.h"
 #include "Monitor.h"
 #include <stdlib.h>
+#include <stdio.h>
 
 using namespace ev3api;
 
@@ -68,7 +69,7 @@ void main_task(intptr_t unused)
     colorid_t   color_number;
     rgb_raw_t   raw_color_data;
     rgb_raw_t   *raw_color = &raw_color_data;
-    char        buf[1000];
+    char        buf[256];
     ledcolor_t led_color[3] = {LED_GREEN,LED_ORANGE,LED_RED};
 
     /* LCD画面表示 */
@@ -115,7 +116,7 @@ void main_task(intptr_t unused)
         sprintf(buf,"RGB is %-d , %-d , %-d",raw_color->r,raw_color->g,raw_color->b);
         monitor->display(buf);
 
-        waitNext(300);
+        waitNext(100);  // 1秒後に再測定可能
     }
 
     /* 完了通知 */

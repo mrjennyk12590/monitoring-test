@@ -1,6 +1,6 @@
 APPL_COBJS +=
 
-APPL_CXXOBJS += Monitor.o
+APPL_CXXOBJS += Monitor.o SdCard.o
 
 SRCLANG := c++
 
